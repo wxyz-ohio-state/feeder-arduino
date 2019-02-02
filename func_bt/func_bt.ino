@@ -20,6 +20,11 @@ All text above, and the splash screen below must be included in any redistributi
 #include <Servo.h>
 
 const int SERVO_PIN = 8;
+const int BTN_PIN = 7;
+
+int state = 2;
+
+bool btn_flag = false;
 
 Servo servo;
 
@@ -49,6 +54,8 @@ void setup(void)
 
   BTLEserial.begin();
 
+  pinMode(BTN_PIN, INPUT);
+
   servo.attach(SERVO_PIN);
   delay(1000);
   servo.write(90);
@@ -63,6 +70,8 @@ aci_evt_opcode_t laststatus = ACI_EVT_DISCONNECTED;
 
 void loop()
 {
+  btn_pressed();
+  
   if (Serial.available() > 0) {
     char temp = Serial.read();
     switch (temp) {
@@ -137,5 +146,33 @@ void loop()
 //      // write the data
 //      BTLEserial.write(sendbuffer, sendbuffersize);
 //    }
+  }
+
+  delay(50);
+}
+
+bool btn_pressed() {
+  if (digitalRead(BTN_PIN) == LOW) {
+    if (!btn_flag) {
+      Serial.println("Btn pressed");
+      state --;
+
+      switch (state) {
+        case 1:
+          servo.write(0);
+          delay(5000);
+          servo.write(90);
+          break;
+        case 0:
+          servo.write(180);
+          delay(5000);
+          servo.write(90);
+          break;
+      }
+    }
+    btn_flag = true;
+  }
+  else {
+    btn_flag = false;
   }
 }
