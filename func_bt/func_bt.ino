@@ -21,10 +21,12 @@ All text above, and the splash screen below must be included in any redistributi
 
 const int SERVO_PIN = 8;
 const int BTN_PIN = 7;
+const int RESET_BTN_PIN = 6;
 
 int state = 2;
 
 bool btn_flag = false;
+bool reset_btn_flag = false;
 
 Servo servo;
 
@@ -55,6 +57,7 @@ void setup(void)
   BTLEserial.begin();
 
   pinMode(BTN_PIN, INPUT);
+  pinMode(RESET_BTN_PIN, INPUT);
 
   servo.attach(SERVO_PIN);
   delay(1000);
@@ -71,6 +74,7 @@ aci_evt_opcode_t laststatus = ACI_EVT_DISCONNECTED;
 void loop()
 {
   btn_pressed();
+  reset_btn_pressed();
   
   if (Serial.available() > 0) {
     char temp = Serial.read();
@@ -174,5 +178,18 @@ bool btn_pressed() {
   }
   else {
     btn_flag = false;
+  }
+}
+
+bool reset_btn_pressed() {
+  if (digitalRead(RESET_BTN_PIN) == LOW) {
+    if (!reset_btn_flag) {
+      Serial.println("I just refilled it!");
+      state = 2;
+    }
+    reset_btn_flag = true;
+  }
+  else {
+    reset_btn_flag = false;
   }
 }
