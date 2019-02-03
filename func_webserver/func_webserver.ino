@@ -2,8 +2,8 @@
 #include <Servo.h>
 
 const int SERVO_PIN = 4;
-const int FEED_BTN_PIN = 2;
-const int RESET_BTN_PIN = 10;
+const int FEED_BTN_PIN = 10;
+const int RESET_BTN_PIN = 2;
 
 bool feed_btn_flag = false;
 bool reset_btn_flag = false;
