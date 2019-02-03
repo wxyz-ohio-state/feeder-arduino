@@ -1,9 +1,9 @@
 #include <ESP8266WiFi.h>
 #include <Servo.h>
 
-const int SERVO_PIN = 4;
-const int FEED_BTN_PIN = 10;
-const int RESET_BTN_PIN = 2;
+const int SERVO_PIN = 4;  // D2
+const int FEED_BTN_PIN = 10; // D1; not working (due to pin conflict???)
+const int RESET_BTN_PIN = 2; // D4
 
 bool feed_btn_flag = false;
 bool reset_btn_flag = false;
