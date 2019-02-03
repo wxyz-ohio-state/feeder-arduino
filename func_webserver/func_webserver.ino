@@ -1,4 +1,14 @@
 #include <ESP8266WiFi.h>
+#include <Servo.h>
+
+const int SERVO_PIN = 4;
+const int FEED_BTN_PIN = 2;
+const int RESET_BTN_PIN = 10;
+
+bool feed_btn_flag = false;
+bool reset_btn_flag = false;
+
+Servo servo;
 
 const char* ssid = "Minghao's X1";
 const char* password = "walterisaacso";
@@ -19,7 +29,7 @@ const int output4 = 4;
 
 int state = 2;
 
-void setup() {
+void setup() {  
   Serial.begin(115200);
   // Initialize the output variables as outputs
   pinMode(output5, OUTPUT);
@@ -42,9 +52,23 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
   server.begin();
+
+  servo.attach(SERVO_PIN);
+  delay(500);
+//  servo.write(0);
+//  delay(2000);
+  servo.write(90);
+
+  pinMode(FEED_BTN_PIN, INPUT);
+  pinMode(RESET_BTN_PIN, INPUT);
+  
+  Serial.println("Setup done");
 }
 
 void loop(){
+  feed_btn_pressed();
+  reset_btn_pressed();
+  
   WiFiClient client = server.available();   // Listen for incoming clients
 
   if (client) {                             // If a new client connects,
@@ -67,15 +91,21 @@ void loop(){
             client.println();
             
             // turns the GPIOs on and off
-            if (_header.indexOf("GET /1") >= 0) {
+            if (_header.indexOf("GET /1") >= 0 && state == 2) {
               state = 1;
+              servo.write(0);
+              delay(5000);
+              servo.write(90);
               Serial.println("******Feed once******");
-            } else if (_header.indexOf("GET /0") >= 0) {
+            } else if (_header.indexOf("GET /0") >= 0 && state == 1) {
               state = 0;
+              servo.write(180);
+              delay(5000);
+              servo.write(90);
               Serial.println("******Feed twice******");
             } else if (_header.indexOf("GET /u") >= 0) {
               Serial.println("******Refill needed******");
-            } else if (_header.indexOf("GET /2") >= 0) {
+            } else if (_header.indexOf("GET /2") >= 0 && state != 2) {
               Serial.println("******Refilled!******");
               state = 2;
             }
@@ -131,5 +161,48 @@ void loop(){
     client.stop();
     Serial.println("Client disconnected.");
     Serial.println("");
+  }
+
+  delay(50);
+}
+
+bool feed_btn_pressed() {
+  if (digitalRead(FEED_BTN_PIN) == LOW) {
+    if (!feed_btn_flag) {
+      Serial.println("Feed btn pressed");
+      if (state >= -1) {
+        state --;
+      }
+
+      switch (state) {
+        case 1:
+          servo.write(0);
+          delay(5000);
+          servo.write(90);
+          break;
+        case 0:
+          servo.write(180);
+          delay(5000);
+          servo.write(90);
+          break;
+      }
+    }
+    feed_btn_flag = true;
+  }
+  else {
+    feed_btn_flag = false;
+  }
+}
+
+bool reset_btn_pressed() {
+  if (digitalRead(RESET_BTN_PIN) == LOW) {
+    if (!reset_btn_flag) {
+      Serial.println("I just refilled it!");
+      state = 2;
+    }
+    reset_btn_flag = true;
+  }
+  else {
+    reset_btn_flag = false;
   }
 }
